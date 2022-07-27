@@ -2,22 +2,29 @@ defmodule Servy.Handler do
   def handle(request) do
     request
     |> parse()
+    |> log
     |> route()
     |> format_response()
   end
 
+  def log(conv), do: IO.inspect(conv)
+
   def parse(request) do
-    [method, path, version] =
+    [method, path, _version] =
       request
       |> String.split("\n")
       |> List.first()
       |> String.split()
 
-    conv = %{method: method, path: path, resp_body: ""}
+    %{method: method, path: path, resp_body: ""}
   end
 
-  def route(conv) do
-    %{ conv | resp_body: "Bears, Lions, Tigers" }
+  def route(%{method: "GET", path: "/wildthings"} = conv) do
+    %{conv | resp_body: "Bears, Lions, Tigers"}
+  end
+
+  def route(%{method: "GET", path: "/bears"} = conv) do
+    %{conv | resp_body: "Teddy, Smokey, Paddington"}
   end
 
   def format_response(conv) do
@@ -26,7 +33,7 @@ defmodule Servy.Handler do
       Content-Type: text/html
       Content-Length: #{byte_size(conv.resp_body)}
 
-      Bears, Lions, Tigers
+      #{conv.resp_body}
     """
   end
 end
