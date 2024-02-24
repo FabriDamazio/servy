@@ -1,9 +1,14 @@
+require Logger
+
 defmodule Servy.Handler do
   def handle(request) do
     request
     |> parse
+    |> rewrite_path
     |> log
     |> route
+    |> emojify
+    |> track
     |> format_response
   end
 
@@ -16,6 +21,23 @@ defmodule Servy.Handler do
 
     %{ method: method, path: path, resp_body: "", status: nil}
   end
+
+  def rewrite_path(%{ path: "/wildlife" } = conv) do
+    %{conv | path: "/wildthings" }
+  end
+
+  def rewrite_path(%{ path: path } = conv) do
+    regex = ~r{\/(?<thing>\w+)\?id=(?<id>\d+)}
+    rewrite_path_captures(conv, Regex.named_captures(regex, path))
+  end
+
+  def rewrite_path(conv), do: conv
+
+  def rewrite_path_captures(conv, %{"thing" => thing, "id" => id}) do
+    %{ conv | path: "/#{thing}/#{id}" }
+  end
+
+  def rewrite_path_captures(conv, nil), do: conv
 
   def log(conv), do: IO.inspect(conv)
 
@@ -31,7 +53,7 @@ defmodule Servy.Handler do
     %{ conv | status: 200, resp_body: "Bear id: #{id}" }
   end
 
-  def route(%{ method: "DELETE", path: "/bears/" <> id} = conv) do
+  def route(%{ method: "DELETE", path: "/bears/" <> _id} = conv) do
     %{ conv | status: 403, resp_body: "Deleting a bear is forbidden!" }
   end
 
@@ -39,8 +61,14 @@ defmodule Servy.Handler do
     %{ conv | status: 404, resp_body: "No #{path} here!" }
   end
 
+  def emojify(%{status: 200} = conv) do
+    emojies = String.duplicate("🎉", 5)
+    %{ conv | resp_body: emojies <> "\n" <> conv.resp_body <> "\n" <> emojies }
+  end
+
+  def emojify(conv), do: conv
+
   def format_response(conv) do
-    # TODO: Use values in the map to create an HTTP response string
     """
     HTTP/1.1 #{conv.status} #{status_reason(conv.status)}
     Content-Type: text/html
@@ -49,6 +77,13 @@ defmodule Servy.Handler do
     #{conv.resp_body}
     """
   end
+
+  def track(%{status: 404, path: path} = conv) do
+    Logger.info("Warning: #{path} not found!")
+    conv
+  end
+
+  def track(conv), do: conv
 
   defp status_reason(code) do
     %{
@@ -91,5 +126,16 @@ User-Agent: ExampleBrowser/1.0
 Accept: */*
 
 """
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
+GET /wildlife HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
 response = Servy.Handler.handle(request)
 IO.puts(response)
