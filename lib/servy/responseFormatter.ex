@@ -1,5 +1,4 @@
 defmodule Servy.ResponseFormatter do
-
   alias Servy.Conv
 
   def format_response(%Conv{} = conv) do

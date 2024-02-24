@@ -1,10 +1,9 @@
 defmodule Servy.Plugins do
-
   require Logger
   alias Servy.Conv
 
   @doc "Logs 404 requests."
-   def track(%Conv{status: 404, path: path} = conv) do
+  def track(%Conv{status: 404, path: path} = conv) do
     Logger.info("Warning: #{path} not found!")
     conv
   end
