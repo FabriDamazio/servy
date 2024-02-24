@@ -3,6 +3,7 @@ defmodule Servy.Handler do
   @moduledoc """
   Handles HTTP requests.
   """
+  alias Servy.Conv
   import Servy.Plugins, only: [rewrite_path: 1, track: 1, log: 1]
   import Servy.Parser, only: [parse: 1]
   import Servy.FileHandler, only: [handle_file: 2]
@@ -23,45 +24,45 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  def route(%{method: "GET", path: "/wildthings"} = conv) do
-    %{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
+  def route(%Conv{method: "GET", path: "/wildthings"} = conv) do
+    %Conv{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
   end
 
-  def route(%{method: "GET", path: "/bears"} = conv) do
-    %{conv | status: 200, resp_body: "Teddy, Smokey, Panddington"}
+  def route(%Conv{method: "GET", path: "/bears"} = conv) do
+    %Conv{conv | status: 200, resp_body: "Teddy, Smokey, Panddington"}
   end
 
-  def route(%{method: "GET", path: "/about"} = conv) do
+  def route(%Conv{method: "GET", path: "/about"} = conv) do
     @pages_path
     |> Path.join("about.html")
     |> File.read()
     |> handle_file(conv)
   end
 
-  def route(%{method: "GET", path: "/bears/new"} = conv) do
+  def route(%Conv{method: "GET", path: "/bears/new"} = conv) do
     Path.expand("../../pages", __DIR__)
     |> Path.join("form.html")
     |> File.read()
     |> handle_file(conv)
   end
 
-  def route(%{method: "GET", path: "/pages/" <> filename} = conv) do
+  def route(%Conv{method: "GET", path: "/pages/" <> filename} = conv) do
     Path.expand("../../pages", __DIR__)
     |> Path.join("#{filename}.html")
     |> File.read()
     |> handle_file(conv)
   end
 
-  def route(%{method: "GET", path: "/bears/" <> id} = conv) do
-    %{conv | status: 200, resp_body: "Bear id: #{id}"}
+  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
+    %Conv{conv | status: 200, resp_body: "Bear id: #{id}"}
   end
 
-  def route(%{method: "DELETE", path: "/bears/" <> _id} = conv) do
-    %{conv | status: 403, resp_body: "Deleting a bear is forbidden!"}
+  def route(%Conv{method: "DELETE", path: "/bears/" <> _id} = conv) do
+    %Conv{conv | status: 403, resp_body: "Deleting a bear is forbidden!"}
   end
 
-  def route(%{method: _method, path: path, resp_body: _resp_body} = conv) do
-    %{conv | status: 404, resp_body: "No #{path} here!"}
+  def route(%Conv{method: _method, path: path, resp_body: _resp_body} = conv) do
+    %Conv{conv | status: 404, resp_body: "No #{path} here!"}
   end
 end
 
