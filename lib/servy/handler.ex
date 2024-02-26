@@ -3,6 +3,7 @@ defmodule Servy.Handler do
   Handles HTTP requests.
   """
   alias Servy.Conv
+  alias Servy.BearController
   import Servy.Plugins, only: [rewrite_path: 1, track: 1, log: 1]
   import Servy.Parser, only: [parse: 1]
   import Servy.FileHandler, only: [handle_file: 2]
@@ -28,15 +29,11 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{method: "GET", path: "/bears"} = conv) do
-    %Conv{conv | status: 200, resp_body: "Teddy, Smokey, Panddington"}
+    BearController.index(conv)
   end
 
   def route(%Conv{method: "POST", path: "/bears"} = conv) do
-    %Conv{
-      conv
-      | status: 201,
-        resp_body: "Created a bear type #{conv.params["type"]} and name #{conv.params["name"]}!"
-    }
+    BearController.create(conv)
   end
 
   def route(%Conv{method: "GET", path: "/about"} = conv) do
@@ -61,11 +58,12 @@ defmodule Servy.Handler do
   end
 
   def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
-    %Conv{conv | status: 200, resp_body: "Bear id: #{id}"}
+    params = Map.put(conv.params, "id", id)
+    BearController.show(conv, params)
   end
 
   def route(%Conv{method: "DELETE", path: "/bears/" <> _id} = conv) do
-    %Conv{conv | status: 403, resp_body: "Deleting a bear is forbidden!"}
+    BearController.delete(conv)
   end
 
   def route(%Conv{method: _method, path: path, resp_body: _resp_body} = conv) do
@@ -148,6 +146,17 @@ Content-Type: application/x-www-form-urlencoded
 Content-Length: 21
 
 name=Baloo&type=Brown
+"""
+
+response = Servy.Handler.handle(request)
+IO.puts(response)
+
+request = """
+GET /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
 """
 
 response = Servy.Handler.handle(request)
