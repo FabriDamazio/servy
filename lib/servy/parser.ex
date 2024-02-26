@@ -2,8 +2,8 @@ defmodule Servy.Parser do
   alias Servy.Conv
 
   def parse(request) do
-    [top, body] = String.split(request, "\n\n")
-    [request_info | headers] = String.split(top, "\n")
+    [top, body] = String.split(request, "\r\n\r\n")
+    [request_info | headers] = String.split(top, "\r\n")
     [method, path, _protocol] = String.split(request_info, " ")
 
     headers = parse_headers(headers)
@@ -12,6 +12,13 @@ defmodule Servy.Parser do
     %Conv{method: method, path: path, params: params, headers: headers}
   end
 
+  @doc """
+  Parses the headers from a request into a map with corresponding keys and values.
+
+  ## Examples
+        iex> Servy.Parser.parse_headers(["Host: example.com", "User-Agent: ExampleBrowser/1.0"])
+        %{"Host" => "example.com", "User-Agent" => "ExampleBrowser/1.0"}
+  """
   def parse_headers(header_lines) do
     Enum.reduce(header_lines, %{}, fn line, acc ->
       [key, value] = String.split(line, ": ")
