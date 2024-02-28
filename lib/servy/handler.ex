@@ -19,6 +19,7 @@ defmodule Servy.Handler do
     |> log
     |> route
     |> track
+    |> calc_content_length
     |> format_response
   end
 
@@ -30,8 +31,16 @@ defmodule Servy.Handler do
     BearController.index(conv)
   end
 
+  def route(%Conv{method: "GET", path: "/api/bears"} = conv) do
+    Servy.Api.BearController.index(conv)
+  end
+
   def route(%Conv{method: "POST", path: "/bears"} = conv) do
     BearController.create(conv)
+  end
+
+  def route(%Conv{method: "POST", path: "/api/bears"} = conv) do
+    Servy.Api.BearController.create(conv)
   end
 
   def route(%Conv{method: "GET", path: "/about"} = conv) do
@@ -66,5 +75,10 @@ defmodule Servy.Handler do
 
   def route(%Conv{method: _method, path: path, resp_body: _resp_body} = conv) do
     %Conv{conv | status: 404, resp_body: "No #{path} here!"}
+  end
+
+  def calc_content_length(conv) do
+    updated_headers = Map.put(conv.resp_headers, "Content-Length", byte_size(conv.resp_body))
+    %{conv | resp_headers: updated_headers}
   end
 end
