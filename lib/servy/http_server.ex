@@ -15,12 +15,14 @@ defmodule Servy.HttpServer do
 
     IO.puts("Connection accepted!\n")
 
-    serve(client_socket)
+    pid = spawn(fn -> serve(client_socket) end)
+    :ok = :gen_tcp.controlling_process(client_socket, pid)
 
     accept_loop(listen_socket)
   end
 
   def serve(client_socket) do
+    IO.puts("#{inspect(self())}")
     client_socket
     |> read_request
     |> generate_response
