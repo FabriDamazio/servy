@@ -49,12 +49,12 @@ defmodule HandlerTest do
     response = handle(request)
 
     assert response == """
-    HTTP/1.1 201 Created\r
-    Content-Type: text/html\r
-    Content-Length: 35\r
-    \r
-    Created a Polar bear named Breezly!
-    """
+           HTTP/1.1 201 Created\r
+           Content-Type: text/html\r
+           Content-Length: 35\r
+           \r
+           Created a Polar bear named Breezly!
+           """
   end
 
   test "GET /wildthings" do

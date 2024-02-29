@@ -1,7 +1,7 @@
 defmodule Servy.HttpServer do
-
   def start(port) when is_integer(port) and port > 1023 do
-    {:ok, listen_socket} = :gen_tcp.listen(port, [:binary, packet: :raw, active: false, reuseaddr: true])
+    {:ok, listen_socket} =
+      :gen_tcp.listen(port, [:binary, packet: :raw, active: false, reuseaddr: true])
 
     IO.puts("\n Listening requests on port #{port}...")
 
@@ -23,6 +23,7 @@ defmodule Servy.HttpServer do
 
   def serve(client_socket) do
     IO.puts("#{inspect(self())}")
+
     client_socket
     |> read_request
     |> generate_response

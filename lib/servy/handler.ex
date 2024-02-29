@@ -2,6 +2,7 @@ defmodule Servy.Handler do
   @moduledoc """
   Handles HTTP requests.
   """
+  alias Servy.VideoCam
   alias Servy.Conv
   alias Servy.BearController
   import Servy.Plugins, only: [rewrite_path: 1, track: 1, log: 1]
@@ -27,6 +28,32 @@ defmodule Servy.Handler do
     raise("Kaboom!")
 
     %Conv{conv | status: 200, resp_body: "Awake!"}
+  end
+
+  def route(%Conv{method: "GET", path: "/snapshots"} = conv) do
+    caller = self()
+    spawn(fn -> VideoCam.get_snapshot(caller, "cam-1") end)
+    spawn(fn -> VideoCam.get_snapshot(caller, "cam-2") end)
+    spawn(fn -> VideoCam.get_snapshot(caller, "cam-3") end)
+
+    snapshot1 =
+      receive do
+        {:result, filename} -> filename
+      end
+
+    snapshot2 =
+      receive do
+        {:result, filename} -> filename
+      end
+
+    snapshot3 =
+      receive do
+        {:result, filename} -> filename
+      end
+
+    snapshots = [snapshot1, snapshot2, snapshot3]
+
+    %Conv{conv | status: 200, resp_body: inspect(snapshots)}
   end
 
   def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
