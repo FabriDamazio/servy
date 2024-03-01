@@ -39,8 +39,7 @@ defmodule Servy.Handler do
       |> Enum.map(&Task.async(fn -> VideoCam.get_snapshot(&1) end))
       |> Enum.map(&Task.await/1)
 
-
-      where_is_bigfoot = Task.await(task)
+    where_is_bigfoot = Task.await(task)
 
     %Conv{conv | status: 200, resp_body: inspect({snapshots, where_is_bigfoot})}
   end
@@ -53,6 +52,18 @@ defmodule Servy.Handler do
 
   def route(%Conv{method: "GET", path: "/wildthings"} = conv) do
     %Conv{conv | status: 200, resp_body: "Bears, Lions, Tigers"}
+  end
+
+  def route(%Conv{method: "POST", path: "/pledges"} = conv) do
+    Servy.PledgeController.create(conv, conv.params)
+  end
+
+  def route(%Conv{method: "GET", path: "/pledges"} = conv) do
+    Servy.PledgeController.index(conv)
+  end
+
+  def route(%Conv{method: "GET", path: "/totalpledges"} = conv) do
+    Servy.PledgeController.total(conv)
   end
 
   def route(%Conv{method: "GET", path: "/bears"} = conv) do
