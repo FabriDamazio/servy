@@ -2,6 +2,7 @@ defmodule Servy.Handler do
   @moduledoc """
   Handles HTTP requests.
   """
+  alias Servy.Tracker
   alias Servy.VideoCam
   alias Servy.Conv
   alias Servy.BearController
@@ -30,30 +31,18 @@ defmodule Servy.Handler do
     %Conv{conv | status: 200, resp_body: "Awake!"}
   end
 
-  def route(%Conv{method: "GET", path: "/snapshots"} = conv) do
-    caller = self()
-    spawn(fn -> VideoCam.get_snapshot(caller, "cam-1") end)
-    spawn(fn -> VideoCam.get_snapshot(caller, "cam-2") end)
-    spawn(fn -> VideoCam.get_snapshot(caller, "cam-3") end)
+  def route(%Conv{method: "GET", path: "/sensors"} = conv) do
+    task = Task.async(fn -> Tracker.get_location("bigfoot") end)
 
-    snapshot1 =
-      receive do
-        {:result, filename} -> filename
-      end
+    snapshots =
+      ["cam-1", "cam-2", "cam-3"]
+      |> Enum.map(&Task.async(fn -> VideoCam.get_snapshot(&1) end))
+      |> Enum.map(&Task.await/1)
 
-    snapshot2 =
-      receive do
-        {:result, filename} -> filename
-      end
 
-    snapshot3 =
-      receive do
-        {:result, filename} -> filename
-      end
+      where_is_bigfoot = Task.await(task)
 
-    snapshots = [snapshot1, snapshot2, snapshot3]
-
-    %Conv{conv | status: 200, resp_body: inspect(snapshots)}
+    %Conv{conv | status: 200, resp_body: inspect({snapshots, where_is_bigfoot})}
   end
 
   def route(%Conv{method: "GET", path: "/hibernate/" <> time} = conv) do
