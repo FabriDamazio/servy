@@ -36,8 +36,6 @@ defmodule Servy.PledgeServer do
   # Server functions
 
   def listen_loop(state) do
-    IO.puts("Waiting for a message")
-
     receive do
       {sender, :create_pledge, name, amount} ->
         {:ok, id} = send_pledge_to_service(name, amount)
