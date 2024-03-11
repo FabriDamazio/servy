@@ -1,7 +1,7 @@
 defmodule Servy.FourOhFourCounter do
   @name :four_oh_four_counter
 
-  alias Servy.GenericServer
+  alias Servy.PledgeServerManualGenserver.GenericServer
 
   def start() do
     GenericServer.start(__MODULE__, %{}, @name)
@@ -30,5 +30,10 @@ defmodule Servy.FourOhFourCounter do
 
   def handle_call(:get_counts, state) do
     {state, state}
+  end
+
+  def handle_info(other, state) do
+    IO.puts "Unexpected message: #{inspect other}"
+    state
   end
 end
