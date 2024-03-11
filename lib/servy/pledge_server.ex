@@ -10,8 +10,9 @@ defmodule Servy.PledgeServer do
 
   # Client interface functions
 
-  def start() do
-    GenServer.start(__MODULE__, %State{}, name: @name)
+  def start_link(_arg) do
+    Logger.info("Starting Pledge Server...")
+    GenServer.start_link(__MODULE__, %State{}, name: @name)
   end
 
   def set_cache_size(size) do

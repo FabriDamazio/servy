@@ -3,7 +3,7 @@ defmodule PledgeServerTest do
   alias Servy.PledgeServer
 
   test "Cache 3 most recent pledges and sum all pledges" do
-    PledgeServer.start()
+    PledgeServer.start_link([])
     PledgeServer.create_pledge("Alice", 100)
     PledgeServer.create_pledge("Bob", 200)
     PledgeServer.create_pledge("Charlie", 300)

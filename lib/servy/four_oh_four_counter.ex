@@ -1,39 +1,44 @@
 defmodule Servy.FourOhFourCounter do
+  use GenServer
+  require Logger
   @name :four_oh_four_counter
 
-  alias Servy.PledgeServerManualGenserver.GenericServer
-
-  def start() do
-    GenericServer.start(__MODULE__, %{}, @name)
+  def start_link(_arg) do
+    Logger.info("Starting 404 Counter server...")
+    GenServer.start_link(__MODULE__, %{}, name: @name)
   end
 
   def bump_count(path) do
-    GenericServer.call(@name, {:bump_count, path})
+    GenServer.call(@name, {:bump_count, path})
   end
 
   def get_count(path) do
-    GenericServer.call(@name, {:get_count, path})
+    GenServer.call(@name, {:get_count, path})
 
   end
 
   def get_counts() do
-    GenericServer.call(@name, :get_counts)
+    GenServer.call(@name, :get_counts)
   end
 
-  def handle_call({:bump_count, path}, state) do
-    {:ok, Map.update(state, path, 1, &(&1 + 1))}
+  def init(initial_state) do
+    {:ok, initial_state}
   end
 
-  def handle_call({:get_count, path}, state) do
-    {Map.get(state, path, 0), state}
+  def handle_call({:bump_count, path}, _from, state) do
+    {:reply, :ok, Map.update(state, path, 1, &(&1 + 1))}
   end
 
-  def handle_call(:get_counts, state) do
-    {state, state}
+  def handle_call({:get_count, path}, _from, state) do
+    {:reply, Map.get(state, path, 0), state}
+  end
+
+  def handle_call(:get_counts, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_info(other, state) do
     IO.puts "Unexpected message: #{inspect other}"
-    state
+    {:noreply, state}
   end
 end

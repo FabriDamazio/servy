@@ -2,9 +2,9 @@ defmodule Servy.KickStarter do
   use GenServer
   require Logger
 
-  def start do
+  def start_link(_arg) do
     Logger.info("Starting the Kickstarter...")
-    GenServer.start(__MODULE__, :ok, name: __MODULE__)
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def get_server do
