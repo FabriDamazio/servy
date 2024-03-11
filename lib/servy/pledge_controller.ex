@@ -21,7 +21,7 @@ defmodule Servy.PledgeController do
 
   def total(conv) do
     # Gets the total pledges
-    total = Servy.PledgeServer.total_pledges()
+    total = Servy.PledgeServer.total_pledged()
 
     %{conv | status: 200, resp_body: inspect(total)}
   end
