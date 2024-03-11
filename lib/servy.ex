@@ -1,7 +1,9 @@
 defmodule Servy do
-  def hello(name) do
-    "Howdy, #{name}"
+  use Application
+  require Logger
+
+  def start(_type, _args) do
+    Logger.info("Starting Servy Application...")
+    Servy.Supervisor.start_link()
   end
 end
-
-# IO.puts Servy.hello("Elixir")
