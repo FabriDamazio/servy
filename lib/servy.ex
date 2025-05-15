@@ -1,9 +1,20 @@
 defmodule Servy do
-  use Application
-  require Logger
+  @moduledoc """
+  Documentation for `Servy`.
+  """
 
-  def start(_type, _args) do
-    Logger.info("Starting Servy Application...")
-    Servy.Supervisor.start_link()
+  @doc """
+  Hello world.
+
+  ## Examples
+
+      iex> Servy.hello()
+      :world
+
+  """
+  def hello(name) do
+    "Hello, #{name}" 
   end
 end
+
+IO.puts Servy.hello("Fabri")
